@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Recommendation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: #f9f9ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #f0f0ff;
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        #imagePreview {
+            max-width: 100%;
+            margin: 20px 0;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .extracted-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .data-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .data-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 Crop Recommendation System</h1>
+        <p class="subtitle">Get personalized crop recommendations based on soil parameters</p>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('manual')">✍️ Manual Entry</button>
+            <button class="tab" onclick="switchTab('ocr')">📸 OCR Upload</button>
+        </div>
+        
+        <!-- Manual Entry Tab -->
+        <div id="manual" class="tab-content active">
+            <form action="/predict" method="POST">
+                <div class="form-group">
+                    <label>Nitrogen (N)</label>
+                    <input type="number" name="Nitrogen" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phosphorus (P)</label>
+                    <input type="number" name="Phosporus" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Potassium (K)</label>
+                    <input type="number" name="Potassium" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Temperature (°C)</label>
+                    <input type="number" name="Temperature" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Humidity (%)</label>
+                    <input type="number" name="Humidity" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>pH Level</label>
+                    <input type="number" name="pH" step="0.01" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Rainfall (mm)</label>
+                    <input type="number" name="Rainfall" step="0.01" required>
+                </div>
+                
+                <button type="submit">Get Recommendation</button>
+            </form>
+            
+            {% if result %}
+            <div class="result">
+                <h3>Recommendation:</h3>
+                <p>{{ result }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- OCR Upload Tab -->
+        <div id="ocr" class="tab-content">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <h3>📸 Upload Soil Health Card</h3>
+                <p>Click to select an image or drag and drop</p>
+                <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+            </div>
+            
+            <img id="imagePreview" alt="Preview">
+            
+            <div id="ocrResults" style="display: none;">
+                <h3>Extracted Data:</h3>
+                <div class="extracted-data" id="extractedData"></div>
+                <button type="button" onclick="processOCR()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer;">Extract Data from Image</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedFile = null;
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.getElementById('ocrResults').style.display = 'block';
+                };
+                reader.readAsDataURL(selectedFile);
+            }
+        }
+        
+        async function processOCR() {
+            if (!selectedFile) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            try {
+                const response = await fetch('http://localhost:5000/ocr/soil-card', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayExtractedData(data.extractedData);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to process image'));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        function displayExtractedData(data) {
+            const container = document.getElementById('extractedData');
+            container.innerHTML = `
+                <div class="data-card">
+                    <div class="data-label">Nitrogen (N)</div>
+                    <div class="data-value">${data.nitrogen || 'N/A'}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">Phosphorus (P)</div>
+                    <div class="data-value">${data.phosphorus || 'N/A'}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">Potassium (K)</div>
+                    <div class="data-value">${data.potassium || 'N/A'}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">pH</div>
+                    <div class="data-value">${data.ph || 'N/A'}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">EC</div>
+                    <div class="data-value">${data.ec || 'N/A'}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">OC</div>
+                    <div class="data-value">${data.oc || 'N/A'}</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
